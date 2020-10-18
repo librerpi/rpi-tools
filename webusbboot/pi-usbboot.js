@@ -23,7 +23,7 @@ function createDevice(dev) {
 
   var b = document.createElement("input");
   b.type = "button";
-  b.value = "push lk.bin";
+  b.value = "push bootcode";
   b.onclick = function () {
     connectToPi(dev);
   };
@@ -57,8 +57,126 @@ navigator.usb.onconnect = function (ev) {
   console.log(ev);
   var dev = ev.device;
   devices[dev.serialNumber] = { dev: dev, dom: createDevice(dev) };
-  var cb = document.getElementById("autopush");
-  if (cb.checked) connectToPi(dev);
+  if (dev.serialNumber == "Broadcom") {
+    startFileserver(dev);
+  } else {
+    var cb = document.getElementById("autopush");
+    if (cb.checked) connectToPi(dev);
+  }
+}
+
+function ep_read(dev, size) {
+  return dev.controlTransferIn({
+    requestType: 'vendor',
+    recipient: 'device',
+    request: 0x0,
+    value: size & 0xffff,
+    index: (size >> 16) & 0xffff
+  }, size)
+    .then(result => {
+      console.log(result);
+      return result;
+    })
+}
+
+function ep_write(dev, buf, size) {
+  return control_out(dev, size)
+    .then(() => {
+      if (size > 0) {
+        return dev.transferOut(1, buf);
+      }
+    })
+}
+
+const config_txt = "uart_2ndstage=1\n";
+
+function checkFileserverRequest(dev, result) {
+  var bit32view = new Uint32Array(result.data.buffer);
+  var control = bit32view[0];
+  console.log("control code", control);
+  var namebuf = result.data.buffer.slice(4);
+  var namelen = (new Uint8Array(namebuf)).indexOf(0);
+  var filename = String.fromCharCode.apply(null, new Uint8Array(namebuf.slice(0,namelen)));
+  console.log(filename);
+  switch (control) {
+  case 0: // get file size
+    switch (filename) {
+      case "config.txt":
+        return control_out(dev, config_txt.length)
+          .then(() => { return fileserverMain(dev); });
+        break;
+      default:
+        return asyncFetch("usbboot/recovery/"+filename)
+          .then(reply_body => {
+            if (reply_body !== null) {
+              console.log("reporting size:", filename, reply_body.byteLength);
+              return control_out(dev, reply_body.byteLength)
+                .then(() => { return fileserverMain(dev); });
+            } else {
+              console.log("file not found:", filename);
+              return ep_write(dev, null, 0)
+                .then(() => { return fileserverMain(dev); });
+            }
+          });
+        break;
+    }
+    break;
+  case 1: // read file
+    console.log("file read:", filename);
+    switch (filename) {
+    case "config.txt":
+      var rawbuf = str2ab(config_txt);
+      return ep_write(dev, rawbuf, rawbuf.byteLength)
+          .then(() => { return fileserverMain(dev); });
+    default:
+      return asyncFetch("usbboot/recovery/"+filename)
+        .then(reply_body => {
+          return ep_write(dev, reply_body, reply_body.byteLength)
+            .then(() => { return fileserverMain(dev); });
+        });
+    }
+    break;
+  case 2: // done
+  }
+}
+
+function str2ab(str) {
+  var buf = new ArrayBuffer(str.length); // 2 bytes for each char
+  var bufView = new Uint8Array(buf);
+  for (var i=0, strLen=str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+
+
+function control_out(dev, size) {
+  return dev.controlTransferOut({
+    requestType: 'vendor',
+    recipient: 'device',
+    request: 0x0,
+    value: size & 0xffff,
+    index: (size >> 16) & 0xffff
+  })
+  .then(result => {
+    console.log("control out:", result);
+  });
+}
+
+function startFileserver(dev) {
+  dev
+    .open()
+    .then(() => dev.selectConfiguration(1))
+    .then(() => {
+      console.log("claiming for fileserver");
+      return dev.claimInterface(0)
+    })
+    .then(() => { return fileserverMain(dev); })
+    .catch(error => { console.log(error); });
+}
+function fileserverMain(dev) {
+  return ep_read(dev, 260)
+    .then(result => { return checkFileserverRequest(dev, result); })
 }
 
 navigator.usb.ondisconnect = function (ev) {
@@ -159,6 +277,27 @@ function fetchFirmware(relativepath) {
     }
   };
   oReq.send(null);
+}
+
+function asyncFetch(path) {
+  return new Promise(function (resolve, reject) {
+    var oReq = new XMLHttpRequest();
+    oReq.open("GET", path, true);
+    oReq.responseType = "arraybuffer";
+    oReq.onload = function (oEvent) {
+      if (oReq.status == 200) {
+        var arrayBuffer = oReq.response; // Note: not oReq.responseText
+        if (arrayBuffer) {
+          console.log(arrayBuffer);
+          console.log("fetched "+arrayBuffer.byteLength+" bytes of "+path);
+          resolve(arrayBuffer);
+        }
+      } else {
+        resolve(null);
+      }
+    };
+    oReq.send(null);
+  });
 }
 
 fetchFirmware("lk.bin");

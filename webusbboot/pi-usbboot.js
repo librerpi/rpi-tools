@@ -3,6 +3,8 @@ console.log("hello world");
 var devices = {};
 var payload;
 var header;
+const config_txt = "uart_2ndstage=1\n";
+var fileserv_root = "usbboot/recovery/"
 
 navigator.usb.getDevices()
   .then(devs => {
@@ -88,8 +90,6 @@ function ep_write(dev, buf, size) {
     })
 }
 
-const config_txt = "uart_2ndstage=1\n";
-
 function checkFileserverRequest(dev, result) {
   var bit32view = new Uint32Array(result.data.buffer);
   var control = bit32view[0];
@@ -106,7 +106,7 @@ function checkFileserverRequest(dev, result) {
           .then(() => { return fileserverMain(dev); });
         break;
       default:
-        return asyncFetch("usbboot/recovery/"+filename)
+        return asyncFetch(fileserv_root + filename)
           .then(reply_body => {
             if (reply_body !== null) {
               console.log("reporting size:", filename, reply_body.byteLength);
@@ -129,7 +129,7 @@ function checkFileserverRequest(dev, result) {
       return ep_write(dev, rawbuf, rawbuf.byteLength)
           .then(() => { return fileserverMain(dev); });
     default:
-      return asyncFetch("usbboot/recovery/"+filename)
+      return asyncFetch(fileserv_root + filename)
         .then(reply_body => {
           return ep_write(dev, reply_body, reply_body.byteLength)
             .then(() => { return fileserverMain(dev); });

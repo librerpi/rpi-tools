@@ -1,0 +1,10 @@
+#console {
+  height: 50%;
+  overflow-y: scroll;
+  border: 1px solid green;
+}
+
+.device {
+  border: 1px solid red;
+  display: block;
+}

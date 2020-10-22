@@ -1,34 +1,87 @@
-console.log("hello world");
-
 var devices = {};
 var payload;
 var header;
-const config_txt = "uart_2ndstage=1\n";
-var fileserv_root = "usbboot/recovery/"
+const config_txt = "uart_2ndstage=1\nenable_uart=1\n";
+var fileserv_root = "usbboot/recovery/";
+
+function updateRoot() {
+  switch (document.getElementById("rootdir").value) {
+  case "recovery":
+    fileserv_root = "usbboot/recovery/";
+    break;
+  case "msd":
+    fileserv_root = "usbboot/msd/";
+    break;
+  case "linux1":
+    fileserv_root = "linux1/";
+    break;
+  }
+}
+
+function updateBootcode() {
+  switch (document.getElementById("bootcode").value) {
+  case "lk":
+    fetchFirmware('lk.bin');
+    break;
+  case "recovery":
+    fetchFirmware('usbboot/recovery/bootcode4.bin');
+    break;
+  }
+}
 
 navigator.usb.getDevices()
   .then(devs => {
-    console.log("pre-authorized devices");
-    console.log(devs);
+    console.log("pre-authorized devices", devs);
     for (var dev of devs) {
-      devices[dev.serialNumber] = { dev: dev, dom: createDevice(dev) };
+      showLog(dev.serialNumber + ": device found on startup");
+      handleNewDevice(dev);
     }
   })
   .catch(error => { console.log(error); });
+
+navigator.usb.onconnect = function (ev) {
+  var dev = ev.device;
+  showLog(dev.serialNumber + ": hotplug detected");
+  handleNewDevice(dev);
+}
+
+navigator.usb.ondisconnect = function (ev) {
+  var dev = ev.device;
+  if (devices[dev.serialNumber]) {
+    devices[dev.serialNumber].dom.parentNode.removeChild(devices[dev.serialNumber].dom);
+  }
+}
+
+function handleNewDevice(dev) {
+  devices[dev.serialNumber] = { dev: dev, dom: createDevice(dev) };
+  if (dev.serialNumber == "Broadcom") {
+    var cb = document.getElementById("autopush");
+    if (cb.checked) startFileserver(dev);
+  } else {
+    var cb = document.getElementById("autopush");
+    if (cb.checked) connectToPi(dev);
+  }
+}
 
 function createDevice(dev) {
   var root = document.createElement("div");
   var t = document.createTextNode("pi: "+dev.serialNumber);
   root.appendChild(t);
-  root.style.display = "block";
-  root.style.border = "1px solid red";
+  root.className = "device";
 
   var b = document.createElement("input");
   b.type = "button";
-  b.value = "push bootcode";
-  b.onclick = function () {
-    connectToPi(dev);
-  };
+  if (dev.serialNumber == "Broadcom") {
+    b.value = "start fileserver";
+    b.onclick = function () {
+      startFileserver(dev);
+    };
+  } else {
+    b.value = "push bootcode";
+    b.onclick = function () {
+      connectToPi(dev);
+    };
+  }
 
   root.appendChild(b);
 
@@ -43,28 +96,27 @@ function flagDomFinished(dev) {
   r.appendChild(document.createTextNode("booting..."));
 }
 
-function doit() {
+function showLog(msg) {
+  var node = document.createElement("div");
+  node.innerText = msg;
+  document.getElementById("console").appendChild(node);
+  try {
+    node.scrollIntoView();
+  } catch (e) {
+  }
+}
+
+function requestAccess() {
   var filters = [
-    { vendorId: 0x0a5c, productId: 0x2711 } // pi4
+    { vendorId: 0x0a5c, productId: 0x2711 }, // pi4 ROM, bootcode.bin, and recovery.bin
+    { vendorId: 0x0a5c, productId: 0x2764 } // pi4 start4.elf
   ];
   navigator.usb.requestDevice({ filters: filters })
     .then(dev => {
-      console.log(dev);
-      device = dev;
+      showLog(dev.serialNumber + ": access granted");
+      handleNewDevice(dev);
     })
     .catch(error => { console.log(error); });
-}
-
-navigator.usb.onconnect = function (ev) {
-  console.log(ev);
-  var dev = ev.device;
-  devices[dev.serialNumber] = { dev: dev, dom: createDevice(dev) };
-  if (dev.serialNumber == "Broadcom") {
-    startFileserver(dev);
-  } else {
-    var cb = document.getElementById("autopush");
-    if (cb.checked) connectToPi(dev);
-  }
 }
 
 function ep_read(dev, size) {
@@ -76,7 +128,7 @@ function ep_read(dev, size) {
     index: (size >> 16) & 0xffff
   }, size)
     .then(result => {
-      console.log(result);
+      if (result.status != "ok") throw new Error("ep_read failed");
       return result;
     })
 }
@@ -93,11 +145,9 @@ function ep_write(dev, buf, size) {
 function checkFileserverRequest(dev, result) {
   var bit32view = new Uint32Array(result.data.buffer);
   var control = bit32view[0];
-  console.log("control code", control);
   var namebuf = result.data.buffer.slice(4);
   var namelen = (new Uint8Array(namebuf)).indexOf(0);
   var filename = String.fromCharCode.apply(null, new Uint8Array(namebuf.slice(0,namelen)));
-  console.log(filename);
   switch (control) {
   case 0: // get file size
     switch (filename) {
@@ -109,34 +159,33 @@ function checkFileserverRequest(dev, result) {
         return asyncFetch(fileserv_root + filename)
           .then(reply_body => {
             if (reply_body !== null) {
-              console.log("reporting size:", filename, reply_body.byteLength);
-              return control_out(dev, reply_body.byteLength)
-                .then(() => { return fileserverMain(dev); });
+              showLog(dev.serialNumber+": sending size of "+filename+" as "+reply_body.byteLength);
+              return control_out(dev, reply_body.byteLength);
             } else {
-              console.log("file not found:", filename);
-              return ep_write(dev, null, 0)
-                .then(() => { return fileserverMain(dev); });
+              showLog(dev.serialNumber+": file not found: "+filename);
+              return ep_write(dev, null, 0);
             }
           });
         break;
     }
     break;
   case 1: // read file
-    console.log("file read:", filename);
+    showLog(dev.serialNumber + ": file read " + filename);
     switch (filename) {
     case "config.txt":
       var rawbuf = str2ab(config_txt);
-      return ep_write(dev, rawbuf, rawbuf.byteLength)
-          .then(() => { return fileserverMain(dev); });
+      return ep_write(dev, rawbuf, rawbuf.byteLength);
     default:
       return asyncFetch(fileserv_root + filename)
         .then(reply_body => {
-          return ep_write(dev, reply_body, reply_body.byteLength)
-            .then(() => { return fileserverMain(dev); });
+          return ep_write(dev, reply_body, reply_body.byteLength);
         });
     }
     break;
   case 2: // done
+    console.log("DONE!");
+    dev.close();
+    break;
   }
 }
 
@@ -149,7 +198,6 @@ function str2ab(str) {
   return buf;
 }
 
-
 function control_out(dev, size) {
   return dev.controlTransferOut({
     requestType: 'vendor',
@@ -159,7 +207,7 @@ function control_out(dev, size) {
     index: (size >> 16) & 0xffff
   })
   .then(result => {
-    console.log("control out:", result);
+    if (result.status != "ok") throw new Error("control out failed");
   });
 }
 
@@ -172,19 +220,14 @@ function startFileserver(dev) {
       return dev.claimInterface(0)
     })
     .then(() => { return fileserverMain(dev); })
-    .catch(error => { console.log(error); });
+    .catch(error => {
+      console.log(error);
+    });
 }
 function fileserverMain(dev) {
   return ep_read(dev, 260)
     .then(result => { return checkFileserverRequest(dev, result); })
-}
-
-navigator.usb.ondisconnect = function (ev) {
-  console.log(ev);
-  var dev = ev.device;
-  if (devices[dev.serialNumber]) {
-    devices[dev.serialNumber].dom.parentNode.removeChild(devices[dev.serialNumber].dom);
-  }
+    .then(() => { return fileserverMain(dev); });
 }
 
 function connectToPi(dev) {
@@ -263,20 +306,13 @@ function connectToPi(dev) {
 }
 
 function fetchFirmware(relativepath) {
-  var oReq = new XMLHttpRequest();
-  oReq.open("GET", relativepath, true);
-  oReq.responseType = "arraybuffer";
-  oReq.onload = function (oEvent) {
-    var arrayBuffer = oReq.response; // Note: not oReq.responseText
-    if (arrayBuffer) {
-      console.log(arrayBuffer);
-      console.log("fetched "+arrayBuffer.byteLength+" bytes of "+relativepath);
+  asyncFetch(relativepath)
+    .then(arrayBuffer => {
+      console.log("fetched "+relativepath);
       payload = arrayBuffer;
       header = new ArrayBuffer(24);
       new DataView(header).setInt32(0, arrayBuffer.byteLength, true);
-    }
-  };
-  oReq.send(null);
+    });
 }
 
 function asyncFetch(path) {
@@ -288,8 +324,7 @@ function asyncFetch(path) {
       if (oReq.status == 200) {
         var arrayBuffer = oReq.response; // Note: not oReq.responseText
         if (arrayBuffer) {
-          console.log(arrayBuffer);
-          console.log("fetched "+arrayBuffer.byteLength+" bytes of "+path);
+          //console.log("fetched "+arrayBuffer.byteLength+" bytes of "+path);
           resolve(arrayBuffer);
         }
       } else {
@@ -300,4 +335,7 @@ function asyncFetch(path) {
   });
 }
 
-fetchFirmware("lk.bin");
+setTimeout(function () {
+  updateBootcode();
+  updateRoot();
+}, 10);

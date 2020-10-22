@@ -1,15 +1,29 @@
 <html>
   <head>
+    <link rel="stylesheet" href="style.css"/>
     <script src="pi-usbboot.js">
     </script>
   </head>
   <body>
-    <input type="button" value="check for pi" onclick="doit()">
-    <input type="button" value="refetch lk.bin" onclick="fetchFirmware('lk.bin')">
-    <input type="button" value="fetch recovery.bin" onclick="fetchFirmware('usbboot/recovery/bootcode4.bin')">
-    <input type="button" value="MSD root" onclick='fileserv_root = "usbboot/msd/";'>
-    <input type="checkbox" id="autopush"> auto push bootcode
+    <input type="button" value="check for pi" onclick="requestAccess()">
+    <br>
+    bootcode.bin to send:
+    <select id="bootcode" onchange="updateBootcode()">
+      <option value="lk">little kernel</option>
+      <option value="recovery">recovery.bin</option>
+    </select>
+    <br>
+    fileserver root:
+    <select id="rootdir" onchange="updateRoot()">
+      <option value="recovery">recovery</option>
+      <option value="msd">msd</option>
+      <option value="linux1">linux 1</option>
+    </select>
+    <br>
+    <input type="checkbox" id="autopush"> auto push
     <div id="devices">
+    </div>
+    <div id="console">
     </div>
     <a href="https://github.com/librerpi/rpi-tools/tree/master/webusbboot">the source!</a>
   </body>

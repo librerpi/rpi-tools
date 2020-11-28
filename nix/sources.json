@@ -17,22 +17,34 @@
         "homepage": "https://github.com/nmattia/niv",
         "owner": "nmattia",
         "repo": "niv",
-        "rev": "9d35b9e4837ab88517210b1701127612c260eccf",
-        "sha256": "0q50xhnm8g2yfyakrh0nly4swyygxpi0a8cb9gp65wcakcgvzvdh",
+        "rev": "29ddaaf4e099c3ac0647f5b652469dfc79cd3b53",
+        "sha256": "1va6myp07gkspgxfch8z3rs9nyvys6jmgzkys6a2c4j09qxp1bs0",
         "type": "tarball",
-        "url": "https://github.com/nmattia/niv/archive/9d35b9e4837ab88517210b1701127612c260eccf.tar.gz",
+        "url": "https://github.com/nmattia/niv/archive/29ddaaf4e099c3ac0647f5b652469dfc79cd3b53.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
         "branch": "nixos-19.03",
-        "description": "DEPRECATED! This is an obsolete, read-only mirror of the NixOS/nixpkgs repository.",
+        "description": "A read-only mirror of NixOS/nixpkgs tracking the released channels. Send issues and PRs to",
         "homepage": "https://github.com/NixOS/nixpkgs",
         "owner": "NixOS",
         "repo": "nixpkgs-channels",
-        "rev": "e0759a49733",
-        "sha256": "1lnaifrbdmvbmz25404z7xpfwaagscs1i80805fyrrs1g27h21qb",
+        "rev": "c32264ef79ffeb807015b66fd6c5c893ba1c8ee9",
+        "sha256": "04p8rra64rhsvkzsdkf9kxibcd8df3wrd1dalcv8ksz8srv7vy34",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs-channels/archive/e0759a49733.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs-channels/archive/c32264ef79ffeb807015b66fd6c5c893ba1c8ee9.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "rpi-open-firmware": {
+        "branch": "master",
+        "description": "Open source VPU side bootloader for Raspberry Pi.",
+        "homepage": null,
+        "owner": "librerpi",
+        "repo": "rpi-open-firmware",
+        "rev": "059d2e0fc19e2d0f30bb74d42a82a2654f498f2d",
+        "sha256": "0crl6qgw69xs8a8lsp82k0c3rc1vgvkynp2if6lwhzxzsbw7zqbd",
+        "type": "tarball",
+        "url": "https://github.com/librerpi/rpi-open-firmware/archive/059d2e0fc19e2d0f30bb74d42a82a2654f498f2d.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }

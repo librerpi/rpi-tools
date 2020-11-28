@@ -1,0 +1,765 @@
+syntax = "proto2";
+option cc_generic_services = false;
+
+package HU;
+
+enum STATUS
+{
+    STATUS_OK = 0;
+}
+
+message ButtonInfo
+{
+    required uint32 scan_code = 1;
+    required bool is_pressed = 2;
+    required uint32 meta = 3;
+    required bool long_press = 4;
+}
+
+message ButtonInfoWrapper
+{
+    repeated ButtonInfo button = 1;
+}
+
+message TouchInfo
+{
+    enum TOUCH_ACTION
+    {
+        TOUCH_ACTION_PRESS = 0;
+        TOUCH_ACTION_RELEASE = 1;
+        TOUCH_ACTION_DRAG = 2;
+    }
+    message Location
+    {
+        required uint32 x = 1;
+        required uint32 y = 2;
+        required uint32 pointer_id = 3;
+    }
+    repeated Location location = 1;
+    optional uint32 action_index = 2;
+    required TOUCH_ACTION action = 3;
+}
+
+message RelativeInputEvent
+{
+    optional uint32 scan_code = 1;
+    optional int32 delta = 2;
+}
+
+message AbsoluteInputEvent
+{
+    optional uint32 scan_code = 1;
+    optional int32 value = 2;
+}
+
+message AbsoluteInputEventWrapper
+{
+    required AbsoluteInputEvent event = 1;
+}
+
+message RelativeInputEventWrapper
+{
+    required RelativeInputEvent event = 1;
+}
+
+message InputEvent
+{
+    required uint64 timestamp = 1;
+    optional int32 disp_channel = 2;
+    optional TouchInfo touch = 3;
+    optional ButtonInfoWrapper button = 4;
+    optional AbsoluteInputEventWrapper abs_event = 5;
+    optional RelativeInputEventWrapper rel_event = 6;
+}
+
+message BindingRequest
+{
+    repeated int32 scan_codes = 1;
+}
+
+message BindingResponse
+{
+    required STATUS status = 1;
+}
+
+message SensorEvent
+{
+    message LocationData
+    {
+        optional uint64 timestamp = 1;
+        optional int32 latitude = 2;
+        optional int32 longitude = 3;
+        optional uint32 accuracy = 4;
+        optional int32 altitude = 5;
+        optional int32 speed = 6;
+        optional int32 bearing = 7;
+    }
+    message NightMode
+    {
+        required bool is_night = 1;
+    }
+    message RPM
+    {
+        required int32 rpm = 1;
+    }
+    message FuelLevel
+    {
+        required int32 fuel_level = 1;
+        optional int32 range = 2;
+        optional bool low_fuel = 3;
+    }
+    message DrivingStatus
+    {
+        enum STATUS
+        {
+            DRIVE_STATUS_FULLY_RESTRICTED = 31; // 0x1f
+            DRIVE_STATUS_LIMIT_MESSAGE_LEN = 16; // 0x10
+            DRIVE_STATUS_NO_CONFIG = 8; // 0x8
+            DRIVE_STATUS_NO_KEYBOARD_INPUT = 2; // 0x2
+            DRIVE_STATUS_NO_VIDEO = 1; // 0x1
+            DRIVE_STATUS_NO_VOICE_INPUT = 4; // 0x4
+            DRIVE_STATUS_UNRESTRICTED = 0; // 0x0
+        }
+        required int32 status = 1;
+    }
+    message DeadReckoning
+    {
+        optional int32 steering_angel = 1;
+        optional int32 wheel_speed = 2;
+    }
+    message CompassData
+    {
+        optional int32 bearing_e6 =1;
+        optional int32 pitch_e6 =2;
+        optional int32 roll_e6 =3;
+    }
+    message SpeedData
+    {
+        optional int32 speed_e6 =1;
+        optional bool cruise_engaged=2;
+        optional bool cruise_set_speed=3;
+    }
+    message OdometerData
+    {
+        optional int32 kms_el = 1;
+        optional int32 trip_kms_el = 2;
+    }
+    message ParkingBreak
+    {
+        optional bool parking_breake =1;
+    }
+    message Passenger
+    {
+        optional bool passenger_present =1;
+    }
+    message Diagnostics
+    {
+        optional bytes diagnostics_byte = 1;
+    }
+    message Environment
+    {
+        optional int32 temperature_e3 =1;
+        optional int32 pressure_e3 = 2;
+        optional int32 rain = 3;
+    }
+    message HVAC
+    {
+        optional int32 target_temperature_e3 = 1;
+        optional int32 current_temperature_e3 = 2;
+    }
+    message Accel
+    {
+        optional int32 acceleration_x_e3 = 1;
+        optional int32 acceleration_y_e3 = 2;
+        optional int32 acceleration_z_e3 = 3;
+    }
+    message Gyro
+    {
+        optional int32 rotation_speed_x_e3 = 1;
+        optional int32 rotation_speed_y_e3 = 2;
+        optional int32 rotation_speed_z_e3 = 3;
+    }
+    message Door
+    {
+        optional bool hood_open=1;
+        optional bool boot_open=2;
+        repeated bool door_open=3;
+    }
+    message Light
+    {
+        enum HEADLIGHT_STATE
+        {
+            HEADLIGHT_STATE_0 = 0;
+            HEADLIGHT_STATE_1 = 1;
+            HEADLIGHT_STATE_2 = 2;
+            HEADLIGHT_STATE_3 = 3;
+        }
+        enum TURN_INDICATOR_STATE
+        {
+            TURN_INDICATOR_STATE_0 = 0;
+            TURN_INDICATOR_STATE_1 = 1;
+            TURN_INDICATOR_STATE_2 = 2;
+            TURN_INDICATOR_STATE_3 = 3;
+        }
+        optional HEADLIGHT_STATE headlight = 1;
+        optional TURN_INDICATOR_STATE turn_indicator = 2;
+        optional bool hazard_light_on = 3;
+
+    }
+    message GearData
+    {
+        enum GEAR
+        {
+            GEAR_DRIVE = 100; // 0x64
+            GEAR_EIGHTH = 8; // 0x8
+            GEAR_FIFTH = 5; // 0x5
+            GEAR_FIRST = 1; // 0x1
+            GEAR_FOURTH = 4; // 0x4
+            GEAR_NEUTRAL = 0; // 0x0
+            GEAR_NINTH = 9; // 0x9
+            GEAR_PARK = 101; // 0x65
+            GEAR_REVERSE = 102; // 0x66
+            GEAR_SECOND = 2; // 0x2
+            GEAR_SEVENTH = 7; // 0x7
+            GEAR_SIXTH = 6; // 0x6
+            GEAR_TENTH = 10; // 0xa
+            GEAR_THIRD = 3; // 0x3
+        }
+        required GEAR gear = 1;
+   }
+
+    repeated LocationData location_data = 1; // Working
+    repeated CompassData compass_data = 2; // Sensor not yet supported
+    repeated SpeedData speed_data = 3; // Working - Aka data is received, but has no effect
+    repeated RPM rpm = 4; //Sensor not yet supported
+    repeated OdometerData odometer_data = 5; //Sensor not yet supported
+    repeated FuelLevel fuel_data = 6; //Sensor not yet supported
+    repeated ParkingBreak parkingbrake_data = 7; // Working
+    repeated GearData gear_data = 8; //Working but need to do the enum definition, and has no effect
+    repeated Diagnostics diagnostics_data = 9; //Sensor not yet supported
+    repeated NightMode night_mode = 10; // Working
+    repeated Environment enviorment_data = 11; //Sensor not yet supported
+    repeated HVAC hvac_data = 12; //Sensor not yet supported
+    repeated DrivingStatus driving_status = 13; //Working
+    repeated DeadReckoning dead_reckoning = 14; //Sensor not yet supported
+    repeated Passenger passenger_data = 15; //Sensor not yet supported
+    repeated Door door_data= 16; //Sensor not yet supported
+    repeated Light light_data= 17;  //Sensor not yet supported
+    //repeated Tire = 18;
+    repeated Accel accel_data = 19; //Sensor not yet supported
+    repeated Gyro gyro_data = 20; //Sensor not yet supported
+    //repeated GPS = 21;
+}
+
+enum SENSOR_TYPE
+{
+    SENSOR_TYPE_LOCATION = 1;
+    SENSOR_TYPE_COMPASS = 2;
+    SENSOR_TYPE_CAR_SPEED = 3;
+    SENSOR_TYPE_RPM = 4;
+    SENSOR_TYPE_ODOMETER = 5;
+    SENSOR_TYPE_FUEL_LEVEL = 6;
+    SENSOR_TYPE_PARKING_BRAKE = 7;
+    SENSOR_TYPE_GEAR = 8;
+    SENSOR_TYPE_DIAGNOSTICS = 9;
+    SENSOR_TYPE_NIGHT_DATA = 10;
+    SENSOR_TYPE_ENVIRONMENT = 11;
+    SENSOR_TYPE_HVAC = 12;
+    SENSOR_TYPE_DRIVING_STATUS = 13;
+    SENSOR_TYPE_DEAD_RECONING = 14;
+    SENSOR_TYPE_PASSENGER = 15;
+    SENSOR_TYPE_DOOR = 16;
+    SENSOR_TYPE_LIGHT = 17;
+    SENSOR_TYPE_TIRE = 18;
+    SENSOR_TYPE_ACCEL = 19;
+    SENSOR_TYPE_GYRO = 20;
+    SENSOR_TYPE_GPS = 21;
+}
+
+enum AUDIO_TYPE
+{
+    AUDIO_TYPE_SPEECH = 1;
+    AUDIO_TYPE_SYSTEM = 2;
+    AUDIO_TYPE_MEDIA = 3;
+    AUDIO_TYPE_ALARM = 4;
+}
+
+enum STREAM_TYPE
+{
+    STREAM_TYPE_AUDIO = 1;
+    STREAM_TYPE_VIDEO = 3;
+}
+
+message AudioCofig
+{
+    required uint32 sample_rate = 1;
+    required uint32 bit_depth = 2;
+    required uint32 channel_count = 3;
+}
+
+enum BluetoothPairingMethod
+{
+    BLUETOOTH_PARING_METHOD_1 = 1;
+    BLUETOOTH_PARING_METHOD_A2DP = 2;
+    BLUETOOTH_PARING_METHOD_3 = 3;
+    BLUETOOTH_PARING_METHOD_HFP = 4;
+}
+
+message ChannelDescriptor
+{
+    required uint32 channel_id = 1;
+    message SensorChannel
+    {
+        message Sensor
+        {
+            optional SENSOR_TYPE type = 1;
+        }
+        repeated Sensor sensor_list = 1;
+    }
+    optional SensorChannel sensor_channel = 2;
+
+    message OutputStreamChannel
+    {
+        required STREAM_TYPE type = 1;
+        optional AUDIO_TYPE audio_type = 2;
+        repeated AudioCofig audio_configs = 3;
+
+        message VideoConfig
+        {
+            enum VIDEO_RESOLUTION
+            {
+                VIDEO_RESOLUTION_800x480 = 1;
+                VIDEO_RESOLUTION_1280x720 = 2;
+                VIDEO_RESOLUTION_1920x1080 = 3;
+            }
+
+            enum VIDEO_FPS
+            {
+                VIDEO_FPS_30 = 1;
+                VIDEO_FPS_60 = 2;
+            }
+            required VIDEO_RESOLUTION resolution = 1;
+            required VIDEO_FPS frame_rate = 2;
+            required uint32 margin_width = 3;
+            required uint32 margin_height = 4;
+            required uint32 dpi = 5;
+            optional uint32 additional_depth = 6;
+        }
+        repeated VideoConfig video_configs = 4;
+        optional bool available_while_in_call = 5;
+    }
+    optional OutputStreamChannel output_stream_channel = 3;
+
+    message InputEventChannel
+    {
+        message TouchScreenConfig
+        {
+            required uint32 width = 1;
+            required uint32 height = 2;
+        }
+        repeated uint32 keycodes_supported = 1;
+        optional TouchScreenConfig touch_screen_config = 2;
+        optional TouchScreenConfig touch_pad_config = 3;
+    }
+
+    optional InputEventChannel input_event_channel = 4;
+
+    message InputStreamChannel
+    {
+        required STREAM_TYPE type = 1;
+        required AudioCofig audio_config = 2;
+        optional bool available_while_in_call = 3;
+    }
+
+    optional InputStreamChannel input_stream_channel = 5;
+
+    message BluetoothService
+    {
+        required string car_address = 1;
+        repeated BluetoothPairingMethod supported_pairing_methods = 2;
+    }
+    optional BluetoothService bluetooth_service = 6;
+
+    message NavigationStatusService
+    {
+        message ImageOptions
+        {
+            required int32 width = 1;
+            required int32 height = 2;
+            required int32 colour_depth_bits = 3;
+        }
+
+        required uint32 minimum_interval_ms = 1;
+        enum CLUSTER_TYPE
+        {
+            CUSTOM_IMAGES_SUPPORTED = 1;
+            IMAGE_CODES_ONLY = 2;
+        }
+        required CLUSTER_TYPE type = 2;
+        optional ImageOptions image_options = 3;
+    }
+    optional NavigationStatusService navigation_status_service = 8;
+
+    //bt service == 6
+    //radio == 7
+    //nav==8
+    //mediaplayback == 9
+    //phonestatus = 10
+
+    message PhoneStatusService
+    {
+    }
+    optional PhoneStatusService phone_status_service = 10;
+
+    //mediabrowser=11
+
+    message VendorExtensionService
+    {
+        optional string name = 1;
+        repeated string package_white_list = 2;
+        optional bytes data = 3;
+    }
+
+    optional VendorExtensionService vendor_extension_service = 12;
+
+    message GenericNotificationService
+    {
+        optional string name = 1;
+    }
+    optional GenericNotificationService generic_notification_service = 13;
+}
+
+message ServiceDiscoveryRequest
+{
+    optional string phone_name = 4;
+}
+
+message ServiceDiscoveryResponse
+{
+    repeated ChannelDescriptor channels = 1;
+    required string head_unit_name = 2;
+    required string car_model = 3;
+    required string car_year = 4;
+    required string car_serial = 5;
+    required bool driver_pos = 6;
+    required string headunit_make = 7;
+    required string headunit_model = 8;
+    required string sw_build = 9;
+    required string sw_version = 10;
+    required bool can_play_native_media_during_vr = 11;
+    required bool hide_clock = 12;
+}
+
+message ChannelOpenRequest
+{
+    optional int32 priority = 1;
+    optional int32 id = 2;
+}
+
+message ChannelOpenResponse
+{
+    required STATUS status = 1;
+}
+
+message PingRequest
+{
+    required int64 timestamp = 1;
+}
+
+message PingResponse
+{
+    required int64 timestamp = 1;
+}
+
+message ShutdownRequest
+{
+    enum REASON
+    {
+        REASON_QUIT = 1;
+    }
+    optional REASON reason = 1;
+}
+
+message ShutdownResponse
+{
+
+}
+
+
+message MediaSetupRequest
+{
+    optional uint32 type = 1; //Enum?
+}
+
+message MediaSetupResponse
+{
+    enum MEDIA_STATUS
+    {
+        MEDIA_STATUS_1 = 1;
+        MEDIA_STATUS_2 = 2;
+    }
+    required MEDIA_STATUS media_status = 1;
+    required uint32 max_unacked = 2;
+    repeated uint32 configs = 3;
+}
+
+
+message MediaStopRequest
+{
+
+}
+
+message MediaStartRequest
+{
+    required int32 session = 1;
+    optional uint32 config = 2;
+}
+
+message MediaAck
+{
+    required int32 session = 1;
+    required uint32 value = 2;
+}
+
+message MicRequest
+{
+    required bool open = 1;
+    optional bool anc = 2;
+    optional bool ec = 3;
+    optional int32 max_unacked = 4;
+}
+
+message MicResponse
+{
+    required int32 session = 1;
+    required uint32 value = 2;
+}
+
+enum VIDEO_FOCUS_MODE
+{
+    VIDEO_FOCUS_MODE_FOCUSED = 1;
+    VIDEO_FOCUS_MODE_UNFOCUSED = 2;
+}
+
+enum VIDEO_FOCUS_REASON
+{
+    VIDEO_FOCUS_REASON_1 = 1;
+    VIDEO_FOCUS_REASON_2 = 2;
+}
+
+message VideoFocusRequest
+{
+    optional int32 disp_index = 1;
+    optional VIDEO_FOCUS_MODE mode = 2;
+    optional VIDEO_FOCUS_REASON reason = 3;
+}
+
+message VideoFocus
+{
+    optional VIDEO_FOCUS_MODE mode = 1;
+    optional bool unrequested = 2;
+}
+
+
+message SensorStartRequest
+{
+    required SENSOR_TYPE type = 1;
+    optional int64 refresh_interval = 2;
+}
+
+message SensorStartResponse
+{
+    required STATUS status = 1;
+}
+
+message NavigationFocusRequest
+{
+    optional uint32 focus_type = 1; //Enum?
+}
+
+message NavigationFocusResponse
+{
+    optional uint32 focus_type = 1; //Enum?
+}
+
+message VoiceSessionRequest
+{
+    enum VOICE_STATUS
+    {
+        VOICE_STATUS_START = 1;
+        VOICE_STATUS_STOP = 2;
+    }
+    optional VOICE_STATUS voice_status = 1;
+}
+
+message AudioFocusRequest
+{
+    enum AUDIO_FOCUS
+    {
+        AUDIO_FOCUS_GAIN = 1;
+        AUDIO_FOCUS_GAIN_TRANSIENT = 2;
+        AUDIO_FOCUS_GAIN_NAVI = 3;
+        AUDIO_FOCUS_RELEASE = 4;
+    }
+    required AUDIO_FOCUS focus_type = 1;
+}
+
+message AudioFocusResponse
+{
+    enum AUDIO_FOCUS_STATE
+    {
+        AUDIO_FOCUS_STATE_GAIN = 1;
+        AUDIO_FOCUS_STATE_GAIN_TRANSIENT = 2;
+        AUDIO_FOCUS_STATE_LOSS = 3;
+        AUDIO_FOCUS_STATE_LOSS_TRANSIENT_CAN_DUCK = 4;
+        AUDIO_FOCUS_STATE_LOSS_TRANSIENT = 5;
+        AUDIO_FOCUS_STATE_GAIN_MEDIA_ONLY = 6;
+        AUDIO_FOCUS_STATE_GAIN_TRANSIENT_GUIDANCE_ONLY = 7;
+    }
+    required AUDIO_FOCUS_STATE focus_type = 1;
+}
+
+message AuthCompleteResponse
+{
+    required STATUS status = 1;
+}
+
+message PhoneStatus
+{
+    enum PHONE_STATE
+    {
+        PHONE_STATE_IN_CALL = 1;
+        PHONE_STATE_ON_HOLD = 2;
+        PHONE_STATE_HANGINGUP = 3;
+        PHONE_STATE_INCOMING = 4;
+        PHONE_STATE_UNKNOWN_5 = 5;
+        PHONE_STATE_UNKNOWN_6 = 6;
+    }
+    message Call
+    {
+        optional PHONE_STATE state = 1;
+        //in seconds
+        optional uint32 call_time = 2;
+        optional string phone_number = 3;
+        optional string caller_id = 4;
+        optional string phone_number_type = 5;
+        optional bytes thumbnail = 6;
+    }
+
+    repeated Call calls = 1;
+    optional uint32 signal_strength = 2;
+}
+
+message PhoneStatusInput
+{
+    optional string caller_number = 1;
+    optional string caller_id = 2;
+}
+
+message GenericNotificationRequest
+{
+    required string id = 1;
+    optional string text = 2;
+    optional string icon = 3;
+}
+
+message GenericNotificationResponse
+{
+    required string id = 1;
+    required bool handled = 2;
+}
+
+message StartGenericNotifications
+{
+}
+
+message StopGenericNotifications
+{
+}
+
+message BluetoothPairingRequest
+{
+    required string phone_address = 1;
+    optional BluetoothPairingMethod pairing_method = 2;
+}
+
+message BluetoothPairingResponse
+{
+    enum PAIRING_STATUS
+    {
+        PAIRING_STATUS_1 = 1;
+        PAIRING_STATUS_2 = 2;
+    }
+    optional bool already_paired = 1;
+    optional PAIRING_STATUS status = 2;
+}
+
+message BluetoothAuthData
+{
+    optional string data = 1;
+}
+
+message NAVMessagesStatus
+{
+    enum STATUS
+    {
+        START = 1;
+        STOP = 2;
+    }
+    optional STATUS status = 1;
+}
+
+message NAVTurnMessage
+{
+    optional string event_name = 1;
+    enum TURN_SIDE
+    {
+        TURN_LEFT = 1;
+        TURN_RIGHT = 2;
+        TURN_UNSPECIFIED = 3;
+    }
+    optional TURN_SIDE turn_side = 2;
+    enum TURN_EVENT
+    {
+        TURN_UNKNOWN = 0;
+        TURN_DEPART = 1;
+        TURN_NAME_CHANGE = 2;
+        TURN_SLIGHT_TURN = 3;
+        TURN_TURN = 4;
+        TURN_SHARP_TURN = 5;
+        TURN_U_TURN = 6;
+        TURN_ON_RAMP = 7;
+        TURN_OFF_RAMP = 8;
+        TURN_FORK = 9;
+        TURN_MERGE = 10;
+        TURN_ROUNDABOUT_ENTER = 11;
+        TURN_ROUNDABOUT_EXIT = 12;
+        TURN_ROUNDABOUT_ENTER_AND_EXIT = 13;
+        TURN_STRAIGHT = 14;
+        TURN_FERRY_BOAT = 16;
+        TURN_FERRY_TRAIN = 17;
+        TURN_DESTINATION = 19;
+    }
+    optional TURN_EVENT turn_event = 3;
+    optional bytes image = 4; // image in png format
+    optional int32 turn_number = 5;
+    optional int32 turn_angle = 6;
+}
+
+//32773   (0x8005)
+message NAVDistanceMessage
+{
+    optional int32 distance = 1; //meters
+    optional int32 time_until = 2; //seconds
+    optional uint64 display_distance = 3; //distance rounded for display
+    enum DISPLAY_DISTANCE_UNIT
+    {
+        METERS = 1;       // meters * 1000, used when rounded distance < 1000m
+        KILOMETERS10 = 2; // kilometers * 1000, used when rounded distance > 10km, not same as just meters because "km" is displayed on screen
+        KILOMETERS = 3;   // kilometers * 1000, used when rounded distance between 1km and 10km, not same as just meters because "km" is displayed on screen
+        MILES10 = 4;      // miles * 1000, used when rounded distance > 10mi
+        MILES = 5;        // miles * 1000, used when rounded distance between 1mi and 10mi
+        FEET = 6;         // feet * 1000
+    }
+    optional DISPLAY_DISTANCE_UNIT display_distance_unit = 4;
+}

@@ -138,7 +138,7 @@ self: super: {
   rootZip = self.runCommand "rootzip" { nativeBuildInputs = [ self.buildPackages.zip ]; } ''
     cd ${self.rootDir}
     mkdir $out
-    zip $out/root.zip *
+    zip -r $out/root.zip *
     cd $out
     mkdir nix-support
     echo "file binary-dist $out/root.zip" > nix-support/hydra-build-products

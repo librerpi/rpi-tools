@@ -10,6 +10,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+// see also: https://www.devever.net/~hl/usbnkro
+
 #define MAX_EVENTS 10
 
 static const uint8_t key_mappings[KEY_MAX + 1] = {

@@ -65,8 +65,19 @@ self: super: {
       #self.gdb
     ] ++ self.extra_utils;
   };
+  trimRootDir = ''
+    rm kernel8.img kernel7.img kernel.img
+    rm start.elf start*db.elf start*x.elf start*cd.elf
+    rm fixup.dat fixup*db.dat fixup*x.dat fixup*cd.dat
+    rm bcm{2708,2710,2709}*dtb
+  '';
   kernel_version = "5.4.72";
-  kernel_versions = map (x: "${self.kernel_version}${x}") [ "+" "-v7+" "-v7l+" "-v8+" ];
+  kernel_versions = map (x: "${self.kernel_version}${x}") [
+    #"+"
+    #"-v7+"
+    "-v7l+"
+    #"-v8+"
+  ];
   modulesForKernels = self.buildEnv {
     name = "all-the-modules";
     paths = map self.moduleClosureForKernel self.kernel_versions;
@@ -134,6 +145,8 @@ self: super: {
     cat <<EOF > cmdline.txt
     console=tty1 console=serial0,115200 quiet
     EOF
+
+    ${self.trimRootDir}
   '';
   rootZip = self.runCommand "rootzip" { nativeBuildInputs = [ self.buildPackages.zip ]; } ''
     cd ${self.rootDir}

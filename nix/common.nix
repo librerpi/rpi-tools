@@ -55,6 +55,7 @@ self: super: {
       "usb_f_rndis"
       "usb_f_mass_storage"
       "gadgetfs" # for custom userland gadgets
+      "usb_f_hid"
     ];
   };
   installedPackages = self.buildEnv {
@@ -133,5 +134,13 @@ self: super: {
     cat <<EOF > cmdline.txt
     console=tty1 console=serial0,115200 quiet
     EOF
+  '';
+  rootZip = self.runCommand "rootzip" { nativeBuildInputs = [ self.buildPackages.zip ]; } ''
+    cd ${self.rootDir}
+    mkdir $out
+    zip $out/root.zip *
+    cd $out
+    mkdir nix-support
+    echo "file binary-dist $out/root.zip" > nix-support/hydra-build-products
   '';
 }

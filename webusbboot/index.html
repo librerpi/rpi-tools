@@ -9,6 +9,7 @@
     <br>
     bootcode.bin to send:
     <select id="bootcode" onchange="updateBootcode()">
+      <option value="bootcode">bootcode.bin</option>
       <option value="lk">little kernel</option>
       <option value="recovery">recovery.bin</option>
     </select>
@@ -18,6 +19,7 @@
       <option value="recovery">recovery</option>
       <option value="msd">msd</option>
       <option value="linux1">linux 1</option>
+      <option value="result">result</option>
     </select>
     <br>
     <input type="checkbox" id="autopush"> auto push
@@ -25,6 +27,8 @@
     </div>
     <div id="console">
     </div>
+    <audio src="ping.mp3" id="sound_done">
+    </audio>
     <a href="https://github.com/librerpi/rpi-tools/tree/master/webusbboot">the source!</a>
   </body>
 </html>

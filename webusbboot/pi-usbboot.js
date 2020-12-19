@@ -1,19 +1,31 @@
 var devices = {};
 var payload;
 var header;
-const config_txt = "uart_2ndstage=1\nenable_uart=1\n";
+const config_txt = "uart_2ndstage=1\nenable_uart=1\ndtoverlay=disable-bt";
+var file_overrides = {};
+file_overrides["config.txt"] = config_txt;
 var fileserv_root = "usbboot/recovery/";
 
 function updateRoot() {
   switch (document.getElementById("rootdir").value) {
   case "recovery":
     fileserv_root = "usbboot/recovery/";
+    file_overrides = {};
+    file_overrides["config.txt"] = config_txt;
     break;
   case "msd":
     fileserv_root = "usbboot/msd/";
+    file_overrides = {};
+    file_overrides["config.txt"] = config_txt;
     break;
   case "linux1":
     fileserv_root = "linux1/";
+    file_overrides = {};
+    file_overrides["config.txt"] = config_txt;
+    break;
+  case "result":
+    fileserv_root = "result/";
+    file_overrides = {};
     break;
   }
 }
@@ -25,6 +37,9 @@ function updateBootcode() {
     break;
   case "recovery":
     fetchFirmware('usbboot/recovery/bootcode4.bin');
+    break;
+  case "bootcode":
+    fetchFirmware("usbboot/msd/bootcode.bin");
     break;
   }
 }
@@ -52,18 +67,49 @@ navigator.usb.ondisconnect = function (ev) {
   }
 }
 
-function handleNewDevice(dev) {
-  devices[dev.serialNumber] = { dev: dev, dom: createDevice(dev) };
-  if (dev.serialNumber == "Broadcom") {
-    var cb = document.getElementById("autopush");
-    if (cb.checked) startFileserver(dev);
-  } else {
-    var cb = document.getElementById("autopush");
-    if (cb.checked) connectToPi(dev);
-  }
+function figureOutMode(dev) {
+  return new Promise(function (resolve, reject) {
+    if (dev.serialNumber == "Broadcom") { // older pi4 eeprom
+      resolve("fileserver");
+    } else {
+      dev.open().then(() => {
+        return dev.controlTransferIn({
+          requestType: "standard",
+          recipient: "device",
+          request: 6, // get descriptor
+          value: 1 << 8, // device descriptor
+          index: 0,
+        }, 256)
+      }
+      ).then(result => {
+        console.log(result);
+        var res = new Uint8Array(result.data.buffer);
+        var mode = "unknown";
+        if ((res[16] == 0) || (res[16] == 3)) mode = "rom";
+        if (res[16] == 4) mode = "fileserver";
+        console.log(res);
+        dev.close();
+        resolve(mode);
+      });
+    }
+  });
 }
 
-function createDevice(dev) {
+function handleNewDevice(dev) {
+  figureOutMode(dev).then(mode => {
+    console.log(mode);
+    devices[dev.serialNumber] = { dev: dev, dom: createDevice(dev, mode), mode:mode };
+    if (mode == "fileserver") {
+      var cb = document.getElementById("autopush");
+      if (cb.checked) startFileserver(dev);
+    } else {
+      var cb = document.getElementById("autopush");
+      if (cb.checked) connectToPi(dev);
+    }
+  });
+}
+
+function createDevice(dev, mode) {
   var root = document.createElement("div");
   var t = document.createTextNode("pi: "+dev.serialNumber);
   root.appendChild(t);
@@ -71,7 +117,7 @@ function createDevice(dev) {
 
   var b = document.createElement("input");
   b.type = "button";
-  if (dev.serialNumber == "Broadcom") {
+  if (mode == "fileserver") {
     b.value = "start fileserver";
     b.onclick = function () {
       startFileserver(dev);
@@ -98,16 +144,18 @@ function flagDomFinished(dev) {
 
 function showLog(msg) {
   var node = document.createElement("div");
-  node.innerText = msg;
+  node.appendChild(document.createTextNode(msg));
   document.getElementById("console").appendChild(node);
   try {
     node.scrollIntoView();
   } catch (e) {
   }
+  return node;
 }
 
 function requestAccess() {
   var filters = [
+    { vendorId: 0x0a5c, productId: 0x2763 }, // pi0
     { vendorId: 0x0a5c, productId: 0x2711 }, // pi4 ROM, bootcode.bin, and recovery.bin
     { vendorId: 0x0a5c, productId: 0x2764 } // pi4 start4.elf
   ];
@@ -133,12 +181,34 @@ function ep_read(dev, size) {
     })
 }
 
-function ep_write(dev, buf, size) {
+function ep_write(dev, buf, size, progNode) {
+  var maxSize = 1024 * 1024 * 4; // 4mb chunk size
+  var veryStart = Date.now();
+  function send_chunk(start, sizeRemain, rate) {
+    console.log("sending chunk", start, sizeRemain);
+    if (sizeRemain > 0) {
+      if (progNode) {
+        progNode.innerText = " " + Math.floor((start / size) * 100) + "%" + rate;
+      }
+      var startTime = Date.now();
+      return dev.transferOut(1, buf.slice(start, start + maxSize))
+        .then(() => {
+          var endTime = Date.now();
+          var rate = maxSize / ((endTime-startTime)/1000);
+          var remain = size - (start + maxSize);
+          return send_chunk(start + maxSize, sizeRemain - maxSize, " " + Math.floor(rate/1024) + "KB/sec " + (Math.floor(remain / rate) + " sec remaining"));
+        });
+    } else {
+      if (progNode) {
+        var veryEnd = Date.now();
+        progNode.innerText = " 100% " + Math.floor(size / ((veryEnd-veryStart)/1000) / 1024) + "KB/sec";
+      }
+    }
+  }
   return control_out(dev, size)
     .then(() => {
-      if (size > 0) {
-        return dev.transferOut(1, buf);
-      }
+      console.log("control out for size");
+      return send_chunk(0, size);
     })
 }
 
@@ -151,46 +221,52 @@ function checkFileserverRequest(dev, result) {
   switch (control) {
   case 0: // get file size
     switch (filename) {
-      case "config.txt":
-        return control_out(dev, config_txt.length)
-          .then(() => { return fileserverMain(dev); });
-        break;
       default:
-        return asyncFetch(fileserv_root + filename)
-          .then(reply_body => {
-            if (reply_body !== null) {
-              showLog(dev.serialNumber+": sending size of "+filename+" as "+reply_body.byteLength);
-              return control_out(dev, reply_body.byteLength);
-            } else {
-              showLog(dev.serialNumber+": file not found: "+filename);
-              return ep_write(dev, null, 0);
-            }
-          });
+        if (file_overrides[filename]) {
+          return control_out(dev, file_overrides[filename].length)
+            .then(() => { return fileserverMain(dev); });
+        } else {
+          return asyncFetch(fileserv_root + filename)
+            .then(reply_body => {
+              if (reply_body !== null) {
+                //showLog(dev.serialNumber+": sending size of "+filename+" as "+reply_body.byteLength);
+                return control_out(dev, reply_body.byteLength);
+              } else {
+                showLog(dev.serialNumber+": file not found: "+filename);
+                return ep_write(dev, null, 0);
+              }
+            });
+        }
         break;
     }
     break;
   case 1: // read file
-    showLog(dev.serialNumber + ": file read " + filename);
+    var node = showLog(dev.serialNumber + ": file read " + filename);
+    var progNode = document.createElement("span");
+    node.appendChild(progNode);
     switch (filename) {
-    case "config.txt":
-      var rawbuf = str2ab(config_txt);
-      return ep_write(dev, rawbuf, rawbuf.byteLength);
     default:
-      return asyncFetch(fileserv_root + filename)
-        .then(reply_body => {
-          return ep_write(dev, reply_body, reply_body.byteLength);
-        });
+      if (file_overrides[filename]) {
+        var rawbuf = str2ab(file_overrides[filename]);
+        return ep_write(dev, rawbuf, rawbuf.byteLength);
+      } else {
+        return asyncFetch(fileserv_root + filename)
+          .then(reply_body => {
+            return ep_write(dev, reply_body, reply_body.byteLength, progNode);
+          });
+      }
     }
     break;
   case 2: // done
     console.log("DONE!");
     dev.close();
+    document.getElementById("sound_done").play();
     break;
   }
 }
 
 function str2ab(str) {
-  var buf = new ArrayBuffer(str.length); // 2 bytes for each char
+  var buf = new ArrayBuffer(str.length); // 1 byte for each char
   var bufView = new Uint8Array(buf);
   for (var i=0, strLen=str.length; i < strLen; i++) {
     bufView[i] = str.charCodeAt(i);
@@ -199,16 +275,18 @@ function str2ab(str) {
 }
 
 function control_out(dev, size) {
-  return dev.controlTransferOut({
+  var obj = {
     requestType: 'vendor',
     recipient: 'device',
     request: 0x0,
     value: size & 0xffff,
     index: (size >> 16) & 0xffff
-  })
-  .then(result => {
-    if (result.status != "ok") throw new Error("control out failed");
-  });
+  };
+  console.log("raw out", obj);
+  return dev.controlTransferOut(obj)
+    .then(result => {
+      if (result.status != "ok") throw new Error("control out failed");
+    });
 }
 
 function startFileserver(dev) {
@@ -262,7 +340,10 @@ function connectToPi(dev) {
       .catch(error => { console.log(error); });
   }
   dev.open()
-    .then(() => dev.selectConfiguration(1))
+    .then(() => {
+      console.log("open worked, now setting configuration");
+      return dev.selectConfiguration(1);
+    })
     .then(() => {
       console.log("claiming");
       return dev.claimInterface(0)

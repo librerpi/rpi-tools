@@ -21,7 +21,7 @@ function updateRoot() {
   case "linux1":
     fileserv_root = "linux1/";
     file_overrides = {};
-    file_overrides["config.txt"] = config_txt;
+    //file_overrides["config.txt"] = config_txt;
     break;
   case "result":
     fileserv_root = "result/";
@@ -69,6 +69,9 @@ navigator.usb.ondisconnect = function (ev) {
 
 function figureOutMode(dev) {
   return new Promise(function (resolve, reject) {
+    if ((dev.vendorId == 0x0a5c) && (dev.productId == 0x2763) && (dev.productName == "BCM2708 Boot")) {
+      return resolve("rom");
+    }
     if (dev.serialNumber == "Broadcom") { // older pi4 eeprom
       resolve("fileserver");
     } else {
@@ -88,8 +91,9 @@ function figureOutMode(dev) {
         if ((res[16] == 0) || (res[16] == 3)) mode = "rom";
         if (res[16] == 4) mode = "fileserver";
         console.log(res);
-        dev.close();
-        resolve(mode);
+        dev.close().then(() => {
+          resolve(mode);
+        });
       });
     }
   });
@@ -383,7 +387,7 @@ function connectToPi(dev) {
     .then(result => {
       return checkChunk(result);
     })
-    .catch(error => { console.log(error); });
+    //.catch(error => { console.log(error); });
 }
 
 function fetchFirmware(relativepath) {

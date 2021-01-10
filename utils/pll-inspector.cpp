@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <bcm_host.h>
 
 #include "map_peripherals.h"
 #include "hexdump.h"
@@ -68,7 +69,7 @@ void print_pll(volatile uint8_t *base, const char *name, uint32_t offset) {
   printf("nvid: %d pdiv: %d power-down: %c prstn: %c control: 0x%x\n", ndiv, pdiv, power_down?'1':'0', prstn?'1':'0', control);
   printf("FRAC: %d (0x%x)\n", frac, frac);
   float divisor = (float)ndiv + ((float)frac / (1<<20));
-  printf("freq: %f\n", (main_crystal / pdiv) * divisor);
+  printf("freq: %f\n", (main_crystal / pdiv) * divisor * 2);
 }
 
 void print_pll_subdivider(volatile uint8_t *base, const char *name, uint32_t offset) {
@@ -103,6 +104,10 @@ int main(int argc, char **argv) {
   volatile uint8_t *addr = static_cast<volatile uint8_t*>(handle.peripherals_start);
   volatile uint8_t *gpio = addr + 0x200000;
   volatile uint32_t *fsel = reinterpret_cast<volatile uint32_t*>(gpio);
+
+  if (bcm_host_is_model_pi4()) main_crystal = 54000000;
+  else main_crystal = 19200000;
+
   for (int i=0; i<6; i++) {
     uint32_t bank_mode = fsel[i];
     for (int j=0; j<10; j++) {

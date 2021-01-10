@@ -35,6 +35,18 @@
         "url": "https://github.com/NixOS/nixpkgs-channels/archive/c32264ef79ffeb807015b66fd6c5c893ba1c8ee9.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "rpi-eeprom": {
+        "branch": "master",
+        "description": "Installation scripts and binaries for the closed sourced Raspberry Pi 4 EEPROMs",
+        "homepage": "https://www.raspberrypi.org/documentation/hardware/raspberrypi/booteeprom.md",
+        "owner": "raspberrypi",
+        "repo": "rpi-eeprom",
+        "rev": "54a9796abbee59067bff9da6b90c1014178f2c21",
+        "sha256": "0yp7bn444n6yisp4hiblrm00rrvrf213amzb4sh96mlb5nhxspqk",
+        "type": "tarball",
+        "url": "https://github.com/raspberrypi/rpi-eeprom/archive/54a9796abbee59067bff9da6b90c1014178f2c21.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "rpi-open-firmware": {
         "branch": "master",
         "description": "Open source VPU side bootloader for Raspberry Pi.",

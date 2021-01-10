@@ -21,6 +21,9 @@ kms-test: kms-test.o
 symbol_dump: symbol_dump.o
 	${CXX} -o $@ $^ -lcommon
 
-install: ramdumper pv_dumper pll-inspector kms-test symbol_dump
+arm_divisor: arm_divisor.o map_peripherals.o
+	${CXX} -o $@ $^ -lcommon -lbcm_host
+
+install: ramdumper pv_dumper pll-inspector kms-test symbol_dump arm_divisor
 	mkdir -pv ${out}/bin
 	cp -vi $^ ${out}/bin/

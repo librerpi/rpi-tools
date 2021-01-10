@@ -1,0 +1,75 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1609468740,
+        "narHash": "sha256-nxGYRe2qKOBBYuDAq1rxOqoo5XGmu+XH7nuJbLJIxns=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "5ea718cb2d390caab4cd5a5164fdf0feaa9f6ae6",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "rpi-eeprom": "rpi-eeprom",
+        "rpi-open-firmware": "rpi-open-firmware",
+        "utils": "utils"
+      }
+    },
+    "rpi-eeprom": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1607946172,
+        "narHash": "sha256-E1/doS2LVpOgJutXNYJweecMQM10RUiujt5YQohd53o=",
+        "owner": "raspberrypi",
+        "repo": "rpi-eeprom",
+        "rev": "54a9796abbee59067bff9da6b90c1014178f2c21",
+        "type": "github"
+      },
+      "original": {
+        "owner": "raspberrypi",
+        "repo": "rpi-eeprom",
+        "type": "github"
+      }
+    },
+    "rpi-open-firmware": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1609383338,
+        "narHash": "sha256-YyAROKXnweXhi9I+Ff2X8+V/+024TMWSpED3P5+Uf+g=",
+        "owner": "librerpi",
+        "repo": "rpi-open-firmware",
+        "rev": "4055c65a3c137881367b376a229d6c0ebb30ed01",
+        "type": "github"
+      },
+      "original": {
+        "owner": "librerpi",
+        "repo": "rpi-open-firmware",
+        "type": "github"
+      }
+    },
+    "utils": {
+      "locked": {
+        "lastModified": 1609246779,
+        "narHash": "sha256-eq6ZXE/VWo3EMC65jmIT6H/rrUc9UWOWVujkzav025k=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "08c7ad4a0844adc4a7f9f5bb3beae482e789afa4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

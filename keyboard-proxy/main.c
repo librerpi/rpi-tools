@@ -68,6 +68,7 @@ static const uint8_t key_mappings[KEY_MAX + 1] = {
   [KEY_APOSTROPHE]= 0x34,
   [KEY_GRAVE]     = 0x35,
   [KEY_COMMA]     = 0x36,
+  [KEY_DOT]       = 0x37,
   [KEY_SLASH]     = 0x38,
   [KEY_CAPSLOCK]  = 0x39,
   [KEY_F1]        = 0x3a,
@@ -94,7 +95,6 @@ static const uint8_t key_mappings[KEY_MAX + 1] = {
   [KEY_UP]        = 0x52,
   [KEY_NUMLOCK]   = 0x53,
   [KEY_SYSRQ]     = 0,
-  [KEY_DOT]       = 0,
 };
 
 int main(int argc, char **argv) {

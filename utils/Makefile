@@ -15,7 +15,7 @@ pll-inspector.o: pll-inspector.cpp
 pll-inspector: pll-inspector.o map_peripherals.o
 	${CC} -o $@ $^ -lbcm_host -lcommon
 
-kms-test: kms-test.o
+kms-test: kms-test.o drm-utils.o common.o
 	${CXX} -o $@ $^ -ldrm -lm
 
 symbol_dump: symbol_dump.o
@@ -23,6 +23,9 @@ symbol_dump: symbol_dump.o
 
 arm_divisor: arm_divisor.o map_peripherals.o
 	${CXX} -o $@ $^ -lcommon -lbcm_host
+
+tearing-test: tearing-test.o drm-utils.o common.o
+	${CXX} -o $@ $^ -ldrm
 
 install: ramdumper pv_dumper pll-inspector kms-test symbol_dump arm_divisor
 	mkdir -pv ${out}/bin

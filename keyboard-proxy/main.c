@@ -164,6 +164,9 @@ int main(int argc, char **argv) {
           case KEY_RIGHTALT:
             mod = 0x40;
             break;
+          case KEY_LEFTMETA:
+            mod = 0x08;
+            break;
           }
           if (ev[j].value) {
             modifiers |= mod;

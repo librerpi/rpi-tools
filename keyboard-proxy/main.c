@@ -64,7 +64,6 @@ static const uint8_t key_mappings[KEY_MAX + 1] = {
   [KEY_LEFTBRACE] = 0x2f,
   [KEY_RIGHTBRACE]= 0x30,
   [KEY_BACKSLASH] = 0x31,
-  [KEY_102ND]     = 0x31,
   [KEY_SEMICOLON] = 0x33,
   [KEY_APOSTROPHE]= 0x34,
   [KEY_GRAVE]     = 0x35,
@@ -95,6 +94,7 @@ static const uint8_t key_mappings[KEY_MAX + 1] = {
   [KEY_DOWN]      = 0x51,
   [KEY_UP]        = 0x52,
   [KEY_NUMLOCK]   = 0x53,
+  [KEY_102ND]     = 0x64,
   [KEY_SYSRQ]     = 0,
 };
 

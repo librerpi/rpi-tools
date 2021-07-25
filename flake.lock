@@ -1,21 +1,35 @@
 {
   "nodes": {
-    "nixpkgs": {
+    "firmware": {
+      "flake": false,
       "locked": {
-        "lastModified": 1609468740,
-        "narHash": "sha256-nxGYRe2qKOBBYuDAq1rxOqoo5XGmu+XH7nuJbLJIxns=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "5ea718cb2d390caab4cd5a5164fdf0feaa9f6ae6",
+        "lastModified": 1613486701,
+        "narHash": "sha256-L3qchuLwhujKcoFiVnL3Ao6b4iKRI/w113EENOpWMNE=",
+        "owner": "raspberrypi",
+        "repo": "firmware",
+        "rev": "ba6259246c702b04ea56ff1034325e476d460ae8",
         "type": "github"
       },
       "original": {
-        "id": "nixpkgs",
-        "type": "indirect"
+        "owner": "raspberrypi",
+        "repo": "firmware",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "narHash": "sha256-kEX6rnp3oWqctSJEgP2yb2RBiRmwnOyz3xW25/zuaGA=",
+        "path": "/home/clever/apps/rpi/nixpkgs-test",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/clever/apps/rpi/nixpkgs-test",
+        "type": "path"
       }
     },
     "root": {
       "inputs": {
+        "firmware": "firmware",
         "nixpkgs": "nixpkgs",
         "rpi-eeprom": "rpi-eeprom",
         "rpi-open-firmware": "rpi-open-firmware",

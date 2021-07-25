@@ -27,6 +27,6 @@ arm_divisor: arm_divisor.o map_peripherals.o
 tearing-test: tearing-test.o drm-utils.o common.o
 	${CXX} -o $@ $^ -ldrm
 
-install: ramdumper pv_dumper pll-inspector kms-test symbol_dump arm_divisor
+install: ramdumper pv_dumper pll-inspector symbol_dump arm_divisor #kms-test
 	mkdir -pv ${out}/bin
 	cp -vi $^ ${out}/bin/

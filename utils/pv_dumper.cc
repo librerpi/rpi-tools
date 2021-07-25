@@ -316,7 +316,7 @@ int main(int argc, char **argv) {
   //hexdump_ram(((uint32_t)rawaddr) + 0x200000, 0x7e200000, 0x200);
   //hexdump_ram(mmiobase + 0x400000, 0x7e400000, 0xd0);
   puts("");
-  //hexdump_ram(mmiobase + 0x402000, 0x7e402000, 0x100);
+  hexdump_ram(mmiobase + 0x404000, 0x7e404000, 0x100);
   dump_hvs(mmiobase, 0, SCALER_DISPLIST0, SCALER_DISPCTRL0);
   dump_hvs(mmiobase, 1, SCALER_DISPLIST1, SCALER_DISPCTRL1);
   dump_hvs(mmiobase, 2, SCALER_DISPLIST2, SCALER_DISPCTRL2);

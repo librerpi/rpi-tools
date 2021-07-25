@@ -1,4 +1,4 @@
-with import <nixpkgs> {};
+{ haskellPackages, runCommand, lib }:
 
 let
   myghc = haskellPackages.ghcWithPackages (ps: with ps; [ formatting aeson cryptohash-sha256 base16-bytestring ]);

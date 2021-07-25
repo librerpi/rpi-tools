@@ -5,14 +5,14 @@
 module Main where
 
 import Data.Binary
-import Data.Binary.Get
+--import Data.Binary.Get
 import qualified Data.ByteString as BS
-import GHC.Generics
-import Control.Applicative
+--import GHC.Generics
+--import Control.Applicative
 import System.Environment
 import Formatting ((%), sformat, hex, shown, stext)
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
+--import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Base16 as Base16
 
 import SpiFs
@@ -55,6 +55,10 @@ extractFiles Entry{entryMagic, entryBody}
   | entryMagic == 0x55aaf00f = do
     BS.writeFile "bootcode.bin" entryBody
   | otherwise = pure ()
-extractFiles FileEntry{entryFileName, entryFileBody} = do
+extractFiles FileEntry{entryFileName, entryFileBody, entryFileBodyCompressed} = do
   BS.writeFile (T.unpack entryFileName) entryFileBody
+  let
+    maybeWriteFile Nothing = pure ()
+    maybeWriteFile (Just body) = BS.writeFile ((T.unpack entryFileName) <> ".lzjb") body
+  maybeWriteFile entryFileBodyCompressed
 extractFiles EntryPadding = pure ()

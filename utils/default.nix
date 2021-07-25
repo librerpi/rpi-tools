@@ -1,4 +1,4 @@
-{ stdenv, common, libraspberrypi, libdrm, pkgconfig }:
+{ stdenv, common, libraspberrypi, libdrm, pkgconfig, lib }:
 
 stdenv.mkDerivation {
   name = "utils";
@@ -7,7 +7,7 @@ stdenv.mkDerivation {
     common libraspberrypi libdrm
     "${libraspberrypi.src}/host_support"
   ];
-  src = stdenv.lib.cleanSource ./.;
+  src = lib.cleanSource ./.;
   dontStrip = true;
   enableParallelBuilding = true;
 }

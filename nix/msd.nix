@@ -1,11 +1,12 @@
 pself: psuper: {
   msd = pself.extend (self: super: {
-    extra_utils = [];
+    extra_utils = [ ];
     initrd_script = ''
       truncate -s $((1024*1024*64)) disk.img
       modprobe -v dwc2
       modprobe -v usb_f_acm
       modprobe -v usb_f_mass_storage
+      modprobe -v usb_f_rndis
 
       cd /sys/kernel/config/usb_gadget
       mkdir g1
@@ -21,6 +22,8 @@ pself: psuper: {
         echo /disk.img > functions/mass_storage.GS0/lun.0/file
       fi
 
+      mkdir functions/rndis.GS0
+
       mkdir configs/c.1
       mkdir configs/c.1/strings/0x409
       echo "Serial Console + MSD" > configs/c.1/strings/0x409/configuration
@@ -31,12 +34,14 @@ pself: psuper: {
       grep Serial /proc/cpuinfo  | cut -c19-26 > strings/0x409/serialnumber
 
       ln -sv functions/acm.GS0 configs/c.1
-      ln -sv functions/mass_storage.GS0 configs/c.1
+      #ln -sv functions/mass_storage.GS0 configs/c.1
+      ln -sv functions/rndis.GS0 configs/c.1
 
       echo fe980000.usb > UDC
 
       cd /
       getty 0 /dev/ttyGS0 &
+      sleep 5
     '';
   });
 }

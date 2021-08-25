@@ -62,6 +62,7 @@ self: super: {
     tlsf = null;
     common = iself.callPackage "${self.sources.rpi-open-firmware}/common" {};
   });
+  withWifi = false;
   etc = self.runCommand "etc" {
     nsswitch = ''
       passwd:    files systemd
@@ -123,7 +124,9 @@ self: super: {
   } ''
     mkdir -p $out/ssh
     cd $out
-    cp ${../wpa_supplicant.conf} wpa_supplicant.conf
+    ${self.lib.optionalString self.withWifi ''
+      cp ${../wpa_supplicant.conf} wpa_supplicant.conf
+    ''}
     cp -r ${self.avahi}/etc/avahi avahi
     chmod +w -R avahi
     for x in avahi/avahi-autoipd.action avahi/avahi-dnsconfd.action; do
@@ -175,7 +178,7 @@ self: super: {
     #cp {self.iproute}/bin/ip $out/bin
     cp ${self.dropbear}/bin/dropbear $out/bin/
     cp ${self.glibcCross.bin}/bin/nscd $out/bin
-    cp ${self.smi-test}/bin/smi-test $out/bin
+    #cp {self.smi-test}/bin/smi-test $out/bin
 
     cp ${self.hidapi}/lib/libhidapi-hidraw.so.0 $out/lib
     cp ${self.libusb1}/lib/libusb-1.0.so.0 $out/lib

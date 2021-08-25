@@ -153,6 +153,7 @@ self: super: {
       "usb_f_rndis"
     ] ++ self.extra_modules;
   };
+  extra_modules = [];
   installedPackages = self.buildEnv {
     name = "bin";
     paths = [

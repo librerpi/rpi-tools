@@ -1,9 +1,10 @@
 let
-  nativePkgs = import <nixpkgs> {};
+  sources = import ./sources.nix;
+  nativePkgs = import sources.nixpkgs {};
   master = import (builtins.fetchTarball https://github.com/nixos/nixpkgs/archive/master.tar.gz) {};
 in
 self: super: {
-  sources = import ./sources.nix;
+  inherit sources;
   baseFirmware = self.runCommand "base-firmware" {} ''
     mkdir $out
     cp -r ${self.sources.firmware}/boot/{*.dtb,kernel*img,fixup*dat,start*elf,overlays} $out/

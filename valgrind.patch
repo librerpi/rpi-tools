@@ -1,0 +1,15 @@
+--- old/configure	2021-09-22 20:03:56.214171041 -0300
++++ new/configure	2021-09-22 20:04:16.841595248 -0300
+@@ -5938,6 +5938,12 @@
+ 	ARCH_MAX="arm"
+ 	;;
+ 
++     armv8*)
++	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ok (${host_cpu})" >&5
++$as_echo "ok (${host_cpu})" >&6; }
++	ARCH_MAX="arm"
++	;;
++
+      aarch64*)
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: ok (${host_cpu})" >&5
+ $as_echo "ok (${host_cpu})" >&6; }

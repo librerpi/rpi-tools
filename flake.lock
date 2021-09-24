@@ -55,11 +55,11 @@
     "rpi-open-firmware": {
       "flake": false,
       "locked": {
-        "lastModified": 1609383338,
-        "narHash": "sha256-YyAROKXnweXhi9I+Ff2X8+V/+024TMWSpED3P5+Uf+g=",
+        "lastModified": 1627196750,
+        "narHash": "sha256-3MdVYk1z1Ro7QXGsWMoV0yTc5SLptO+oonTWQPi90sA=",
         "owner": "librerpi",
         "repo": "rpi-open-firmware",
-        "rev": "4055c65a3c137881367b376a229d6c0ebb30ed01",
+        "rev": "418f43903320b31e7846223c95448fe3f44b506c",
         "type": "github"
       },
       "original": {

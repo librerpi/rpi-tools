@@ -31,6 +31,9 @@
       valgrind = super.valgrind.overrideAttrs (old: {
         patches = [ ./valgrind.patch ];
       });
+      valgrind-light = super.valgrind-light.overrideAttrs (old: {
+        patches = [ ./valgrind.patch ];
+      });
     };
     systemTable = {
       x86_64-linux = "x86_64-linux";

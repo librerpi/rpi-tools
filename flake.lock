@@ -27,10 +27,27 @@
         "type": "path"
       }
     },
+    "nixpkgs-be": {
+      "locked": {
+        "lastModified": 1637870784,
+        "narHash": "sha256-Q1myxSePUS59sMHcg0aw1yDubGNFFGoKF9FXvRCquN0=",
+        "owner": "cleverca22",
+        "repo": "nixpkgs",
+        "rev": "947f918986d57419b148fc17f5d83e3b72480c62",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cleverca22",
+        "ref": "aarch64-be",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "firmware": "firmware",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-be": "nixpkgs-be",
         "rpi-eeprom": "rpi-eeprom",
         "rpi-open-firmware": "rpi-open-firmware",
         "utils": "utils"

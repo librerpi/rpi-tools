@@ -59,5 +59,10 @@
     in {
       inherit (be) diskImage script;
     }));
+    hydraJobs = nixpkgs.lib.optionalAttrs (system == "aarch64_be-linux") (let
+      be = import ./big-endian { inherit nixpkgs-be; };
+    in {
+      inherit (be) diskImage script;
+    });
   });
 }

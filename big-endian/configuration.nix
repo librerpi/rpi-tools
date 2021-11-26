@@ -6,10 +6,11 @@ let
       BLK_MQ_VIRTIO = yes;
       CPU_BIG_ENDIAN = yes;
       CRYPTO_AEGIS128_SIMD = no;
+      PCI = yes;
+      PCI_HOST_GENERIC = yes;
       SCSI_VIRTIO = yes;
       VIRTIO = yes;
       VIRTIO_BLK = yes;
-      PCI = yes;
       VIRTIO_MENU = yes;
       VIRTIO_MMIO = yes;
       VIRTIO_NET = yes;

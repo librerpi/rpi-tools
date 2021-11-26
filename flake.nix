@@ -58,11 +58,11 @@
       be = import ./big-endian { inherit nixpkgs-be; };
     in {
       inherit (be) diskImage script;
+      cross-bootstrap = (import (nixpkgs-be + "/pkgs/stdenv/linux/make-bootstrap-tools-cross.nix") { system = "x86_64-linux"; }).aarch64_be.dist;
     }));
     hydraJobs = nixpkgs.lib.optionalAttrs (system == "aarch64_be-linux") (let
-      be = import ./big-endian { inherit nixpkgs-be; };
     in {
-      inherit (be) diskImage script;
+      inherit (self.outputs.packages.${system}) diskImage script cross-bootstrap;
     });
   });
 }

@@ -29,11 +29,11 @@
     },
     "nixpkgs-be": {
       "locked": {
-        "lastModified": 1637870784,
-        "narHash": "sha256-Q1myxSePUS59sMHcg0aw1yDubGNFFGoKF9FXvRCquN0=",
+        "lastModified": 1637959927,
+        "narHash": "sha256-NhfBtrRwGZK9NuPR3DGa7fk6l+XK07vvEYJyyz8Edok=",
         "owner": "cleverca22",
         "repo": "nixpkgs",
-        "rev": "947f918986d57419b148fc17f5d83e3b72480c62",
+        "rev": "c865a2a7dd68d0d7f3f7b5bdda951feba0bc05c4",
         "type": "github"
       },
       "original": {

@@ -170,7 +170,7 @@ self: super: {
   libnl = super.libnl.override { pythonSupport = false; };
   shrunkenPackages = self.runCommandCC "shrunken-packages" { nativeBuildInputs = [ nativePkgs.nukeReferences ]; } ''
     mkdir -p $out/{bin,lib}
-    cp ${self.openocd}/bin/openocd $out/bin
+    #cp {self.openocd}/bin/openocd $out/bin
     cp ${self.wpa_supplicant}/bin/wpa_supplicant $out/bin
     cp ${self.avahi}/bin/avahi-daemon $out/bin
     cp ${self.strace}/bin/strace $out/bin
@@ -208,8 +208,8 @@ self: super: {
     linker=$(basename $(cat $NIX_CC/nix-support/dynamic-linker))
     chmod +w -R $out
 
-    sed -i -e 's@${self.openocd}@/nix/store/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-${self.openocd.name}@' $out/bin/openocd
-    sed -i -e 's@${self.openocd}@/nix/store/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-${self.openocd.name}@' $out/bin/openocd
+    #sed -i -e 's@{self.openocd}@/nix/store/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-{self.openocd.name}@' $out/bin/openocd
+    #sed -i -e 's@{self.openocd}@/nix/store/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-{self.openocd.name}@' $out/bin/openocd
     for x in $out/lib/lib{pthread.so.0,gcc_s.so.1,rt.so.1,mount.so.1,crypto.so.1.0.0,dbus-1.so.3,gpg-error.so.0,ssp.so.0,daemon.so.0,avahi-common.so.3,pam.so.0,util.so.1,z.so.1,crypt.so.1,resolv.so.2,gssapi_krb5.so.2,krb5.so.3,k5crypto.so.3,com_err.so.3,nss_files.so.2}; do
       nuke-refs $x
     done

@@ -1,0 +1,22 @@
+RPi4 B1 silicon introduces a new boot image format:
+Offset  Data type  Comment
+ 0x00   byte[n]    payload
+ n      dword      n = payload size (must equal total size minus 284)
+ n+4    dword      key index (0 .. 3)
+                   a key is DISABLED if the corresponding OTP boot
+                   mode bit is set (bits 15 .. 18)
+ n+8    byte[256]  RSA signature
+ n+264  byte[20]   old-style checksum (ignored)
+The RSA signature is interpreted as a 2048-bit big-endian integer, which is decrypted using the exponent value of 65537 and one of the 4 public key modulos and exporting the result again as a 2048-bit big-endian integer.
+
+the new scheme is controlled by bit 14 in the OTP boot mode register
+this bit is ZERO on my RPi4 with B1 silicon, which means it still uses the old scheme
+I haven't found the courage to program the bit
+there's no official way to do that, anyway
+
+
+the bcm2711C0 rsa validation routine will:
+sha1 sum the payload+payloadsize+keyindex
+confirm that the payloadsize+footsize == actualsize
+confirm the keyindex is in the range stated above
+do something with the key and sha1 hash

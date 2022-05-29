@@ -16,7 +16,20 @@ console.log("key index:", key_index);
 
 const rsa_signature = footer.slice(8, 264);
 console.log("rsa sig:", rsa_signature.toString("hex"));
+// from both https://github.com/librerpi/rpi-open-firmware/commit/a65026a501d2e3e5b7c5397ad377b2acb27b795b and a discord convo with another person
+// The type-00 blob is signed with RSA-SHA1 with PKCS#1 v1.5 padding (signature goes just before the HMAC and is covered by it). The public key is
 // The RSA signature is interpreted as a 2048-bit big-endian integer, which is decrypted using the exponent value of 65537 and one of the 4 public key modulos and exporting the result again as a 2048-bit big-endian integer.
+
+try {
+  const pubkey_pem = fs.readFileSync(process.mainModule.path + "/pubkey" + key_index + ".pem");
+  const pubkey = crypto.createPublicKey(pubkey_pem);
+
+  var verify = crypto.createVerify("RSA-SHA1");
+  verify.update(full_bootcode.slice(0, payload_size + 8));
+  console.log("is rsa sig valid:", verify.verify(pubkey, rsa_signature));
+} catch (e) {
+  console.log("error loading pubkey for slot "+key_index, e);
+}
 
 const hmac_sig = footer.slice(264, 284);
 console.log("hmac sig:", hmac_sig.toString("hex"));

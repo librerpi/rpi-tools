@@ -14,7 +14,7 @@
       flake = false;
     };
     nixpkgs-be.url = "github:cleverca22/nixpkgs/aarch64-be";
-    nixpkgs.url = "path:/home/clever/apps/rpi/nixpkgs-test";
+    #nixpkgs.url = "path:/home/clever/apps/rpi/nixpkgs-test";
   };
   outputs = { self, nixpkgs, utils, rpi-eeprom, rpi-open-firmware, firmware, nixpkgs-be }:
   utils.lib.eachSystem [ "x86_64-linux" "armv7l-linux" "armv6l-linux" "aarch64-linux" "aarch64_be-linux" ] (system:

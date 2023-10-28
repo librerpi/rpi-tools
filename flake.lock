@@ -18,13 +18,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "narHash": "sha256-kEX6rnp3oWqctSJEgP2yb2RBiRmwnOyz3xW25/zuaGA=",
-        "path": "/home/clever/apps/rpi/nixpkgs-test",
-        "type": "path"
+        "lastModified": 1698336494,
+        "narHash": "sha256-sO72WDBKyijYD1GcKPlGsycKbMBiTJMBCnmOxLAs880=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "808c0d8c53c7ae50f82aca8e7df263225cf235bf",
+        "type": "github"
       },
       "original": {
-        "path": "/home/clever/apps/rpi/nixpkgs-test",
-        "type": "path"
+        "id": "nixpkgs",
+        "type": "indirect"
       }
     },
     "nixpkgs-be": {

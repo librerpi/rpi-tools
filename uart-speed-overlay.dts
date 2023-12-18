@@ -1,0 +1,45 @@
+#include <dt-bindings/clock/rp1.h>
+// cc -x assembler-with-cpp -E uart-speed-overlay.dts -o temp -I ~/apps/rpi/linux-pi5/include
+// dtc temp -o uart-speed.dtbo
+
+/dts-v1/;
+/plugin/;
+
+/{
+  compatible = "brcm,bcm2712";
+  fragment@0 {
+    target = <&rp1_clocks>;
+    __overlay__ {
+      assigned-clocks = <&rp1_clocks RP1_PLL_SYS_CORE>,
+                        <&rp1_clocks RP1_PLL_AUDIO_CORE>,
+                        // RP1_PLL_VIDEO_CORE and dividers are now managed by VEC,DPI drivers
+                        <&rp1_clocks RP1_PLL_SYS>,
+                        <&rp1_clocks RP1_PLL_SYS_SEC>,
+                        <&rp1_clocks RP1_PLL_AUDIO>,
+                        <&rp1_clocks RP1_PLL_AUDIO_SEC>,
+                        <&rp1_clocks RP1_CLK_SYS>,
+                        <&rp1_clocks RP1_PLL_SYS_PRI_PH>,
+                        // RP1_CLK_SLOW_SYS is used for the frequency counter (FC0)
+                        <&rp1_clocks RP1_CLK_SLOW_SYS>,
+                        <&rp1_clocks RP1_CLK_SDIO_TIMER>,
+                        <&rp1_clocks RP1_CLK_SDIO_ALT_SRC>,
+                        <&rp1_clocks RP1_CLK_ETH_TSU>,
+                        <&rp1_clocks RP1_CLK_UART>;
+
+      assigned-clock-rates = <1000000000>, // RP1_PLL_SYS_CORE
+                             <1536000000>, // RP1_PLL_AUDIO_CORE
+                             <200000000>,  // RP1_PLL_SYS
+                             <125000000>,  // RP1_PLL_SYS_SEC
+                             <61440000>,   // RP1_PLL_AUDIO
+                             <192000000>,  // RP1_PLL_AUDIO_SEC
+                             <200000000>,  // RP1_CLK_SYS
+                             <100000000>,  // RP1_PLL_SYS_PRI_PH
+                             // Must match the XOSC frequency
+                             <50000000>, // RP1_CLK_SLOW_SYS
+                             <1000000>, // RP1_CLK_SDIO_TIMER
+                             <200000000>, // RP1_CLK_SDIO_ALT_SRC
+                             <50000000>, // RP1_CLK_ETH_TSU
+                             <100000000>; // RP1_CLK_UART
+    };
+  };
+};

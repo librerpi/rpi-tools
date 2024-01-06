@@ -5,11 +5,22 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <bcm_host.h>
 
 int main(int argc, char **argv) {
   int fd = open("/dev/mem", O_RDONLY);
-  void *addr = mmap(NULL, 16 * 1024 * 1024, PROT_READ, MAP_SHARED, fd, 0xfe000000);
-  if (addr == -1) {
+  if (fd == -1) {
+    perror("unable to open /dev/mem");
+    return 2;
+  }
+  uint64_t physaddr;
+  // physaddr = 0x20000000; // bcm2835
+  // physaddr = 0xfe000000; // bcm2711
+  physaddr = 0x1000000000; // bcm2712
+  //physaddr = bcm_host_get_peripheral_address();
+  //printf("addr %lx\n", physaddr);
+  void *addr = mmap(NULL, 16 * 1024 * 1024, PROT_READ, MAP_SHARED, fd, physaddr);
+  if (addr == MAP_FAILED) {
     perror("unable to mmap");
     return 1;
   }
@@ -23,7 +34,7 @@ int main(int argc, char **argv) {
   close(fd);
   double soc_uptime = ((float)snapshot / 1000000);
   double linux_uptime = atof(buffer);
-  printf("uptimes %lf - %lf == %lf\n", soc_uptime, linux_uptime, soc_uptime - linux_uptime);
+  printf("uptimes soc:%lf - linux:%lf == %lf\n", soc_uptime, linux_uptime, soc_uptime - linux_uptime);
   return 0;
 }
 

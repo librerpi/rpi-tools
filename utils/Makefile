@@ -1,8 +1,8 @@
 CFLAGS := -g `${PKG_CONFIG} --cflags libdrm` -g
 CXXFLAGS := ${CFLAGS}
 
-ramdumper: ramdumper.cc
-	${CC} -o $@ $< -lcommon
+ramdumper: ramdumper.cc hexdump.cc
+	${CC} -o $@ $<
 
 pv_dumper.o: pv_dumper.cc
 

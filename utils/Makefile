@@ -2,7 +2,7 @@ CFLAGS := -g `${PKG_CONFIG} --cflags libdrm` -g
 CXXFLAGS := ${CFLAGS}
 
 ramdumper: ramdumper.cc hexdump.cc
-	${CC} -o $@ $<
+	${CC} -o $@ $^
 
 pv_dumper.o: pv_dumper.cc
 
@@ -18,6 +18,9 @@ pll-inspector: pll-inspector.o map_peripherals.o
 kms-test: kms-test.o drm-utils.o common.o
 	${CXX} -o $@ $^ -ldrm -lm
 
+transposer-test: transposer-test.o drm-utils.o common.o
+	${CXX} -o $@ $^ -ldrm -lm
+
 symbol_dump: symbol_dump.o
 	${CXX} -o $@ $^ -lcommon
 
@@ -27,6 +30,6 @@ arm_divisor: arm_divisor.o map_peripherals.o
 tearing-test: tearing-test.o drm-utils.o common.o
 	${CXX} -o $@ $^ -ldrm
 
-install: ramdumper pv_dumper pll-inspector symbol_dump arm_divisor #kms-test
+install: ramdumper pv_dumper pll-inspector symbol_dump transposer-test  arm_divisor #kms-test
 	mkdir -pv ${out}/bin
 	cp -vi $^ ${out}/bin/

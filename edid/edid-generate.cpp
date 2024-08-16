@@ -11,10 +11,17 @@ void add_detailed(uint8_t *buf, uint32_t pixel_clock,
   uint16_t hactive, uint16_t hfp, uint16_t hsync, uint16_t hbp,
   uint16_t vactive, uint16_t vfp, uint16_t vsync, uint8_t vbp,
   bool interlaced) {
-  pixel_clock = pixel_clock / (10 * 1000);
   uint16_t hblank = hfp + hsync + hbp;
   uint16_t vblank = vfp + vsync + vbp;
 
+  uint32_t htotal = hactive + hblank;
+  uint32_t vtotal = vactive + vblank;
+  uint32_t total = vtotal * htotal;
+  printf("hfreq: %f, vfreq: %f\n", (float)pixel_clock / (float)htotal, (float)pixel_clock / (float)total);
+  printf("htotal: %d, vtotal: %d\n", htotal, vtotal);
+  printf("hblank: %d, hblank: %d\n", hblank, vblank);
+
+  pixel_clock = pixel_clock / (10 * 1000);
   buf[0] = pixel_clock & 0xff;
   buf[1] = pixel_clock >> 8;
 
@@ -33,6 +40,9 @@ void add_detailed(uint8_t *buf, uint32_t pixel_clock,
   buf[9] = hsync & 0xff;
   buf[10] = ((vfp & 0xf) << 4) | (vsync & 0xf);
   buf[11] = (((hfp>>8)&3) << 6) | (((hsync>>8)&3) << 4) | (((vfp>>8)&3)<<2) | ((vsync>>8)&2);
+  buf[12] = 40;
+  buf[13] = 30;
+
   buf[17] = (interlaced << 7) | (3 << 3);
 }
 
@@ -76,8 +86,8 @@ int main(int argc, char **argv) {
 
   add_detailed(buffer + 54 + (18 * 0),
     27 * 1000 * 1000, // pclk
-    720*2, 14*2, 64*2, 60*2, // hactive/hfp/hsync/hbp
-    240, 3, 4, 16, // vactive/vfp/vsync/vbp
+    1440, 40, 118, 118, // hactive/hfp/hsync/hbp
+    240, 3, 4, 15, // vactive/vfp/vsync/vbp
     true);
 
   uint8_t sum = 0;
@@ -86,7 +96,7 @@ int main(int argc, char **argv) {
   }
   buffer[127] = 256 - sum;
 
-  int fd = open("out.bin", O_WRONLY | O_CREAT, 0755);
+  int fd = open("test.bin", O_WRONLY | O_CREAT, 0755);
   assert(fd >= 0);
   int ret = write(fd, buffer, 128);
   assert(ret == 128);

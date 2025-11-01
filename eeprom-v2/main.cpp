@@ -112,11 +112,34 @@ void handle_chunk(uint32_t magic, const uint8_t *data, int size, string output_p
     }
     break;
   }
+  case 0x55aaf44f:
+  {
+    // much like 33, a 16 char name, lz4 data, and a 32 byte hash
+    const char *name = (const char*)data;
+    printf("%d byte LZ4'd file, \"%s\"\n", size, name);
+    string out = output_path + "/" + name + ".lz4";
+
+    FILE *fp = fopen(out.c_str(), "wb");
+    fwrite(data+16, size-16-32, 1, fp);
+    fclose(fp);
+    break;
+  }
   case 0x55aafeef:
     //printf("%d byte alignment padding\n", size);
     break;
   default:
+  {
+    static int idx;
+    char name[16];
+    bzero(name, 16);
+    snprintf(name, 15, "%x", idx++);
+    string out = output_path + "/" + name;
+
+    FILE *fp = fopen(out.c_str(), "wb");
+    fwrite(data, size, 1, fp);
+    fclose(fp);
     printf("unhandled magic 0x%x\n", magic);
+  }
   }
 }
 
